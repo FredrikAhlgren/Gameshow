@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Show Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e4620 0%, #0f2912 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fef3c7;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .view-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .view-btn {
+            padding: 12px 30px;
+            border: 2px solid #fbbf24;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: #1e4620;
+            font-weight: bold;
+        }
+        
+        .view-btn.active {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+        
+        .view-btn:hover {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .wireframe {
+            display: none;
+            background: linear-gradient(to bottom, #ffffff 0%, #fef3c7 100%);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
+            border: 3px solid #fbbf24;
+        }
+        
+        .wireframe.active {
+            display: block;
+        }
+        
+        /* Big Screen Wireframe */
+        .big-screen {
+            min-height: 600px;
+        }
+        
+        .screen-header {
+            text-align: center;
+            padding: 20px;
+            border: 3px dashed #dc2626;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        }
+        
+        .screen-header h2 {
+            color: #fef3c7;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .screen-header p {
+            color: #fef3c7;
+            font-size: 14px;
+        }
+        
+        .current-question {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 4px solid #dc2626;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 150px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .question-category {
+            font-size: 18px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .timer-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .timer-label {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .question-text {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .question-value {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: #fef3c7;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+        
+        .buzzer-indicator {
+            background: #fef3c7;
+            border: 3px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+        
+        .buzzer-indicator.active {
+            display: block;
+        }
+        
+        .buzzer-indicator.correct {
+            background: #d1fae5;
+            border-color: #10b981;
+            animation: none;
+        }
+        
+        .buzzer-indicator.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes spotlight {
+            0%, 100% {
+                box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(251, 191, 36, 0.8), 0 0 100px rgba(251, 191, 36, 0.4);
+            }
+        }
+        
+        .question-popup {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .popup-content {
+            animation: scaleIn 0.4s ease-out;
+        }
+        
+        .team-score.spotlight {
+            animation: spotlight 2s ease-in-out infinite;
+            transform: scale(1.05);
+            transition: transform 0.3s;
+        }
+        
+        .sound-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .sound-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        
+        .sound-btn:hover {
+            background: #555;
+            transform: scale(1.1);
+        }
+        
+        .sound-btn.muted {
+            background: #ef4444;
+        }
+        
+        .buzzer-indicator strong {
+            font-size: 20px;
+            color: #92400e;
+        }
+        
+        .answer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .answer-overlay.active {
+            display: flex;
+        }
+        
+        .overlay-content {
+            text-align: center;
+            padding: 60px;
+            border-radius: 20px;
+            max-width: 800px;
+        }
+        
+        .overlay-content.correct {
+            background: #10b981;
+        }
+        
+        .overlay-content.incorrect {
+            background: #ef4444;
+        }
+        
+        .overlay-icon {
+            font-size: 120px;
+            margin-bottom: 20px;
+        }
+        
+        .overlay-text {
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        
+        .overlay-subtext {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .question-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        
+        .question-popup.active {
+            display: flex;
+        }
+        
+        .popup-content {
+            background: linear-gradient(135deg, #1e4620 0%, #0f2912 100%);
+            padding: 60px;
+            border-radius: 20px;
+            max-width: 900px;
+            text-align: center;
+            border: 8px solid #fbbf24;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+        }
+        
+        .popup-category {
+            color: #fbbf24;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .popup-value {
+            color: #fbbf24;
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .popup-question {
+            color: white;
+            font-size: 42px;
+            line-height: 1.4;
+            margin-bottom: 40px;
+        }
+        
+        .popup-timer {
+            background: rgba(0, 0, 0, 0.3);
+            color: #fbbf24;
+            font-size: 64px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            border: 4px solid #fbbf24;
+        }
+        
+        .popup-timer.warning {
+            color: #ef4444;
+            border-color: #ef4444;
+            animation: pulse 0.5s infinite;
+        }
+        
+        .popup-close {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        
+        .popup-close:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
+        }
+        
+        .scoreboard {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .team-score {
+            flex: 1;
+            max-width: 300px;
+            border: 3px solid #333;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .team-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 3px solid currentColor;
+            overflow: hidden;
+        }
+        
+        .team-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .team-score h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+        
+        .category {
+            border: 2px solid #10b981;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .question-cell {
+            border: 2px solid #dc2626;
+            padding: 30px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: #fef3c7;
+            border-radius: 8px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+        }
+        
+        .question-cell:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+        
+        .question-cell.answered {
+            background: #d1d5db;
+            color: #6b7280;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            box-shadow: none;
+        }
+        
+        /* Mobile Buzzer Wireframe */
+        .mobile-buzzer {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .phone-frame {
+            border: 8px solid #dc2626;
+            border-radius: 40px;
+            padding: 20px;
+            background: linear-gradient(to bottom, #ffffff 0%, #fef3c7 100%);
+            box-shadow: 0 10px 40px rgba(220, 38, 38, 0.3);
+            min-height: 700px;
+        }
+        
+        .mobile-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+        }
+        
+        .mobile-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .mobile-header p {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .team-selector {
+            margin-bottom: 40px;
+        }
+        
+        .team-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .team-selector select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .buzzer-container {
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .buzzer-button {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: 8px solid #10b981;
+            background: linear-gradient(145deg, #10b981, #059669);
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .buzzer-button:active {
+            transform: scale(0.95);
+            background: linear-gradient(145deg, #dc2626, #991b1b);
+            color: white;
+            border-color: #dc2626;
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.6);
+        }
+        
+        .buzzer-button.locked {
+            background: #d1d5db;
+            border-color: #9ca3af;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        .buzzer-button.locked:active {
+            transform: none;
+            background: #d1d5db;
+            color: #6b7280;
+        }
+        
+        .player-name-input {
+            margin-bottom: 20px;
+        }
+        
+        .player-name-input label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .player-name-input input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .buzzer-status {
+            margin-top: 40px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .notes {
+            margin-top: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #dc2626;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+        }
+        
+        .notes h3 {
+            margin-bottom: 10px;
+            color: #1e4620;
+        }
+        
+        .notes ul {
+            margin-left: 20px;
+            color: #1e4620;
+        }
+        
+        .notes li {
+            margin-bottom: 8px;
+        }
+        
+        /* Judge Panel Styles */
+        .judge-panel {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .judge-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e4620 0%, #0f2912 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(30, 70, 32, 0.3);
+        }
+        
+        .judge-header h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .buzzer-alert {
+            background: #fef3c7;
+            border: 3px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .buzzer-alert-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .buzzer-icon {
+            font-size: 32px;
+        }
+        
+        .buzzer-info h3 {
+            color: #92400e;
+            margin-bottom: 5px;
+        }
+        
+        .buzzer-info p {
+            color: #78350f;
+            font-size: 14px;
+        }
+        
+        .question-answer-box {
+            background: #f9fafb;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .qa-section {
+            margin-bottom: 20px;
+        }
+        
+        .qa-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .qa-label {
+            font-weight: bold;
+            color: #4b5563;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .qa-content {
+            font-size: 18px;
+            color: #111827;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .answer-content {
+            background: #ecfdf5;
+            border-color: #10b981;
+        }
+        
+        .player-response-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #d1d5db;
+        }
+        
+        .player-response {
+            background: #fff7ed;
+            border: 2px solid #fb923c;
+        }
+        
+        .partial-credit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #fef3c7;
+            border-radius: 6px;
+        }
+        
+        .partial-credit label {
+            flex: 1;
+            font-weight: bold;
+            color: #78350f;
+        }
+        
+        .partial-credit input[type="range"] {
+            flex: 2;
+        }
+        
+        .partial-credit-value {
+            font-weight: bold;
+            color: #92400e;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .answer-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .team-setup {
+            background: white;
+            border: 3px solid #10b981;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .team-setup h3 {
+            color: #1e4620;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .team-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .team-color-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 3px solid currentColor;
+        }
+        
+        .team-input-fields {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .team-input-fields input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .team-picture-upload {
+            position: relative;
+        }
+        
+        .team-picture-btn {
+            padding: 10px 15px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        
+        .team-picture-btn:hover {
+            background: #4f46e5;
+        }
+        
+        .team-picture-input {
+            display: none;
+        }
+        
+        .team-color-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 3px solid currentColor;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .team-color-indicator img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .team-active-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #10b981;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .btn-apply-teams {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-apply-teams:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .question-setup {
+            background: white;
+            border: 3px solid #dc2626;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question-setup h3 {
+            color: #1e4620;
+            margin-bottom: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px 0;
+            z-index: 10;
+        }
+        
+        .category-input-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .category-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .category-header input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dc2626;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .question-values {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .question-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .question-value-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #dc2626;
+            text-align: center;
+        }
+        
+        .question-input-wrapper input {
+            padding: 8px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .question-input-wrapper textarea {
+            padding: 8px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            resize: vertical;
+            min-height: 50px;
+            max-height: 80px;
+        }
+        
+        .answer-label {
+            font-size: 10px;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .question-type-select {
+            padding: 6px;
+            border: 2px solid #6366f1;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%);
+            cursor: pointer;
+        }
+        
+        .type-hint {
+            font-size: 9px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .btn-apply-questions {
+            width: 100%;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+        
+        .btn-apply-questions:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+        
+        .answer-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .answer-history h4 {
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #d1d5db;
+        }
+        
+        .history-item.correct {
+            border-left-color: #10b981;
+        }
+        
+        .history-item.incorrect {
+            border-left-color: #ef4444;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-team {
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .history-question {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+        
+        .history-result {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .history-result.correct {
+            color: #10b981;
+        }
+        
+        .history-result.incorrect {
+            color: #ef4444;
+        }
+        
+        .scoring-section {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+        }
+        
+        .scoring-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .scoring-header h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        
+        .point-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        
+        .judge-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .judge-btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .judge-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-correct {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-correct:hover {
+            background: #059669;
+        }
+        
+        .btn-incorrect {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-incorrect:hover {
+            background: #dc2626;
+        }
+        
+        .override-section {
+            border-top: 2px dashed #d1d5db;
+            padding-top: 25px;
+        }
+        
+        .override-section h4 {
+            margin-bottom: 15px;
+            color: #6b7280;
+        }
+        
+        .score-adjustment {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .score-adjustment input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .score-adjustment select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .btn-apply {
+            background: #6366f1;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-apply:hover {
+            background: #4f46e5;
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            
+            .scoreboard {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎄 Christmas Games - Interactive Demo 🎅</h1>
+        
+        <div class="view-selector">
+            <button class="view-btn active" onclick="showView('big-screen')">📺 Big Screen Display</button>
+            <button class="view-btn" onclick="showView('mobile')">📱 Mobile Buzzer</button>
+            <button class="view-btn" onclick="showView('judge')">⚖️ Judge Panel</button>
+        </div>
+        
+        <!-- Big Screen Display -->
+        <div id="big-screen" class="wireframe big-screen active">
+            <div class="sound-controls">
+                <span style="font-size: 14px; color: #666;">Sound Effects:</span>
+                <button class="sound-btn" id="soundToggle" onclick="toggleSound()" title="Toggle Sound">
+                    🔊
+                </button>
+                <button class="sound-btn" onclick="playSound('buzzer')" title="Test Buzzer">
+                    🔔
+                </button>
+                <button class="sound-btn" onclick="playSound('correct')" title="Test Correct">
+                    ✓
+                </button>
+                <button class="sound-btn" onclick="playSound('wrong')" title="Test Wrong">
+                    ✗
+                </button>
+            </div>
+            
+            <div class="screen-header">
+                <h2>🎄 CHRISTMAS GAMES 🎅</h2>
+            </div>
+            
+            <div class="buzzer-indicator active" id="buzzerIndicator">
+                🔔 <strong>Team Blue</strong> buzzed in! (Sarah Johnson)
+            </div>
+            
+            <div class="answer-overlay" id="answerOverlay">
+                <div class="overlay-content correct" id="overlayContent">
+                    <div class="overlay-icon">✓</div>
+                    <div class="overlay-text">CORRECT!</div>
+                    <div class="overlay-subtext">Team Blue +300 points</div>
+                </div>
+            </div>
+            
+            <div class="question-popup" id="questionPopup">
+                <div class="popup-content">
+                    <div class="popup-category" id="popupCategory">HISTORY</div>
+                    <div class="popup-value" id="popupValue">300</div>
+                    <div class="popup-question" id="popupQuestion">
+                        This year marked the signing of the Declaration of Independence
+                    </div>
+                    <div class="popup-timer" id="popupTimer">0:15</div>
+                    <button class="popup-close" onclick="closeQuestionPopup()">Close</button>
+                </div>
+            </div>
+            
+            <div class="scoreboard">
+                <div class="team-score" style="border-color: #3b82f6; color: #3b82f6;">
+                    <div class="team-avatar">🔵</div>
+                    <h3>TEAM BLUE</h3>
+                    <div class="score">1,200</div>
+                </div>
+                <div class="team-score" style="border-color: #ef4444; color: #ef4444;">
+                    <div class="team-avatar">🔴</div>
+                    <h3>TEAM RED</h3>
+                    <div class="score">800</div>
+                </div>
+                <div class="team-score" style="border-color: #10b981; color: #10b981;">
+                    <div class="team-avatar">🟢</div>
+                    <h3>TEAM GREEN</h3>
+                    <div class="score">1,500</div>
+                </div>
+            </div>
+            
+            <div class="game-board">
+                <div class="category">Science</div>
+                <div class="category">History</div>
+                <div class="category">Pop Culture</div>
+                <div class="category">Geography</div>
+                <div class="category">Sports</div>
+                
+                <div class="question-cell" onclick="markAnswered(this)">100</div>
+                <div class="question-cell answered">100</div>
+                <div class="question-cell" onclick="markAnswered(this)">100</div>
+                <div class="question-cell" onclick="markAnswered(this)">100</div>
+                <div class="question-cell" onclick="markAnswered(this)">100</div>
+                
+                <div class="question-cell" onclick="markAnswered(this)">200</div>
+                <div class="question-cell" onclick="markAnswered(this)">200</div>
+                <div class="question-cell answered">200</div>
+                <div class="question-cell" onclick="markAnswered(this)">200</div>
+                <div class="question-cell" onclick="markAnswered(this)">200</div>
+                
+                <div class="question-cell" onclick="markAnswered(this)">300</div>
+                <div class="question-cell" onclick="markAnswered(this)">300</div>
+                <div class="question-cell" onclick="markAnswered(this)">300</div>
+                <div class="question-cell answered">300</div>
+                <div class="question-cell" onclick="markAnswered(this)">300</div>
+                
+                <div class="question-cell" onclick="markAnswered(this)">400</div>
+                <div class="question-cell" onclick="markAnswered(this)">400</div>
+                <div class="question-cell" onclick="markAnswered(this)">400</div>
+                <div class="question-cell" onclick="markAnswered(this)">400</div>
+                <div class="question-cell" onclick="markAnswered(this)">400</div>
+                
+                <div class="question-cell" onclick="markAnswered(this)">500</div>
+                <div class="question-cell" onclick="markAnswered(this)">500</div>
+                <div class="question-cell" onclick="markAnswered(this)">500</div>
+                <div class="question-cell" onclick="markAnswered(this)">500</div>
+                <div class="question-cell" onclick="markAnswered(this)">500</div>
+            </div>
+            
+            <div class="notes">
+                <h3>📝 Design Notes - Big Screen</h3>
+                <ul>
+                    <li>✅ Current question displayed prominently with category and value</li>
+                    <li>✅ Live countdown timer with tick sounds in last 10 seconds</li>
+                    <li>✅ Team avatars/icons added with color-coded borders</li>
+                    <li>✅ Buzzer indicator shows which team buzzed in (live at top)</li>
+                    <li>✅ Correct/wrong answer overlay with animations</li>
+                    <li>✅ Sound effects: buzzer, correct chime, wrong buzz, timer ticks (use controls!)</li>
+                    <li>✅ Team spotlight effect - glowing animation when answering correctly</li>
+                    <li>✅ Question popup with smooth animations when clicking board squares</li>
+                    <li>Large, easily readable text for viewing from distance</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Mobile Buzzer -->
+        <div id="mobile" class="wireframe mobile-buzzer">
+            <div class="phone-frame">
+                <div class="mobile-header">
+                    <h2>Christmas Games Buzzer</h2>
+                    <p>Tap the buzzer to answer!</p>
+                </div>
+                
+                <div class="player-name-input">
+                    <label>Your Name:</label>
+                    <input type="text" placeholder="Enter your name" value="Sarah Johnson">
+                </div>
+                
+                <div class="team-selector">
+                    <label>Select Your Team:</label>
+                    <select>
+                        <option>Team Blue</option>
+                        <option>Team Red</option>
+                        <option>Team Green</option>
+                    </select>
+                </div>
+                
+                <div class="buzzer-container">
+                    <button class="buzzer-button" onclick="pressBuzzer(this)">
+                        BUZZ!
+                    </button>
+                </div>
+                
+                <div class="buzzer-status">
+                    <p><strong>Status:</strong> Ready to buzz in</p>
+                    <p style="margin-top: 10px; font-size: 14px; color: #10b981;">
+                        ✓ Buzzer Active • Vibration Enabled
+                    </p>
+                </div>
+            </div>
+            
+            <div class="notes">
+                <h3>📝 Design Notes - Mobile Buzzer</h3>
+                <ul>
+                    <li>✅ Player name input field for identification</li>
+                    <li>✅ Vibration feedback on buzzer press (device-dependent)</li>
+                    <li>✅ Buzzer lock state prevents multiple presses</li>
+                    <li>Large, thumb-friendly buzzer button (250px diameter)</li>
+                    <li>Team selection dropdown at top</li>
+                    <li>Visual feedback on press (try tapping the buzzer!)</li>
+                    <li>Status indicator shows if buzzer is active/locked</li>
+                    <li>Simple, distraction-free interface</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Judge Panel -->
+        <div id="judge" class="wireframe judge-panel">
+            <div class="judge-header">
+                <h2>⚖️ JUDGE CONTROL PANEL</h2>
+                <p>Review answers and assign scores</p>
+            </div>
+            
+            <div class="team-setup">
+                <h3>🎄 Team Setup</h3>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #3b82f6;" id="team1Preview">🔵</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Blue" id="team1Name">
+                        <input type="number" placeholder="Score" value="1200" id="team1Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team1Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team1Pic" accept="image/*" onchange="previewTeamPicture(1)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="team1Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #ef4444;" id="team2Preview">🔴</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Red" id="team2Name">
+                        <input type="number" placeholder="Score" value="800" id="team2Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team2Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team2Pic" accept="image/*" onchange="previewTeamPicture(2)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="team2Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #10b981;" id="team3Preview">🟢</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Green" id="team3Name">
+                        <input type="number" placeholder="Score" value="1500" id="team3Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team3Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team3Pic" accept="image/*" onchange="previewTeamPicture(3)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="team3Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #f59e0b;" id="team4Preview">🟡</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Yellow" id="team4Name">
+                        <input type="number" placeholder="Score" value="0" id="team4Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team4Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team4Pic" accept="image/*" onchange="previewTeamPicture(4)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="team4Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #8b5cf6;" id="team5Preview">🟣</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Purple" id="team5Name">
+                        <input type="number" placeholder="Score" value="0" id="team5Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team5Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team5Pic" accept="image/*" onchange="previewTeamPicture(5)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="team5Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #ec4899;" id="team6Preview">🩷</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Pink" id="team6Name">
+                        <input type="number" placeholder="Score" value="0" id="team6Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team6Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team6Pic" accept="image/*" onchange="previewTeamPicture(6)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="team6Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #f97316;" id="team7Preview">🟠</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Orange" id="team7Name">
+                        <input type="number" placeholder="Score" value="0" id="team7Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team7Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team7Pic" accept="image/*" onchange="previewTeamPicture(7)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="team7Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: #06b6d4;" id="team8Preview">🔷</div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="Team Cyan" id="team8Name">
+                        <input type="number" placeholder="Score" value="0" id="team8Score">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('team8Pic').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="team8Pic" accept="image/*" onchange="previewTeamPicture(8)">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="team8Active">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn-apply-teams" onclick="applyTeamSetup()">Apply Team Changes</button>
+            </div>
+            
+            <div class="question-setup">
+                <h3>🎄 Question & Category Setup</h3>
+                
+                <div class="category-input-group">
+                    <div class="category-header">
+                        <input type="text" placeholder="Category 1 Name" value="Science" id="category1Name">
+                    </div>
+                    <div class="question-values">
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">100</div>
+                            <select class="question-type-select" id="cat1q1type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat1q1">This planet is known as the Red Planet</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat1a1" value="What is Mars?">
+                            <span class="type-hint">Standard: Exact answer | Closest: Number answer | Creative: Judge picks best</span>
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">200</div>
+                            <select class="question-type-select" id="cat1q2type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat1q2">H2O is the chemical formula for this substance</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat1a2" value="What is water?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">300</div>
+                            <select class="question-type-select" id="cat1q3type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat1q3">This force keeps planets in orbit around the sun</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat1a3" value="What is gravity?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">400</div>
+                            <select class="question-type-select" id="cat1q4type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat1q4">The smallest unit of life is called this</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat1a4" value="What is a cell?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">500</div>
+                            <select class="question-type-select" id="cat1q5type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat1q5">This scientist developed the theory of relativity</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat1a5" value="Who is Einstein?">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-input-group">
+                    <div class="category-header">
+                        <input type="text" placeholder="Category 2 Name" value="History" id="category2Name">
+                    </div>
+                    <div class="question-values">
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">100</div>
+                            <select class="question-type-select" id="cat2q1type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat2q1">This wall fell in 1989, reuniting Germany</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat2a1" value="What is the Berlin Wall?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">200</div>
+                            <select class="question-type-select" id="cat2q2type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat2q2">The first president of the United States</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat2a2" value="Who is George Washington?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">300</div>
+                            <select class="question-type-select" id="cat2q3type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat2q3">This year marked the signing of the Declaration of Independence</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat2a3" value="What is 1776?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">400</div>
+                            <select class="question-type-select" id="cat2q4type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat2q4">This empire was ruled by Julius Caesar</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat2a4" value="What is the Roman Empire?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">500</div>
+                            <select class="question-type-select" id="cat2q5type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat2q5">World War II ended in this year</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat2a5" value="What is 1945?">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-input-group">
+                    <div class="category-header">
+                        <input type="text" placeholder="Category 3 Name" value="Pop Culture" id="category3Name">
+                    </div>
+                    <div class="question-values">
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">100</div>
+                            <select class="question-type-select" id="cat3q1type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat3q1">This streaming service is known for "Stranger Things"</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat3a1" value="What is Netflix?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">200</div>
+                            <select class="question-type-select" id="cat3q2type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat3q2">She sang "Bad Romance" and "Poker Face"</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat3a2" value="Who is Lady Gaga?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">300</div>
+                            <select class="question-type-select" id="cat3q3type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat3q3">This superhero team includes Iron Man and Captain America</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat3a3" value="What is the Avengers?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">400</div>
+                            <select class="question-type-select" id="cat3q4type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat3q4">The highest-grossing film of all time (as of 2023)</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat3a4" value="What is Avatar?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">500</div>
+                            <select class="question-type-select" id="cat3q5type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat3q5">This boy wizard attends Hogwarts School</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat3a5" value="Who is Harry Potter?">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-input-group">
+                    <div class="category-header">
+                        <input type="text" placeholder="Category 4 Name" value="Geography" id="category4Name">
+                    </div>
+                    <div class="question-values">
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">100</div>
+                            <select class="question-type-select" id="cat4q1type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat4q1">The capital of France</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat4a1" value="What is Paris?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">200</div>
+                            <select class="question-type-select" id="cat4q2type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat4q2">This ocean is the largest</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat4a2" value="What is the Pacific Ocean?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">300</div>
+                            <select class="question-type-select" id="cat4q3type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat4q3">Mount Everest is located in this mountain range</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat4a3" value="What is the Himalayas?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">400</div>
+                            <select class="question-type-select" id="cat4q4type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat4q4">This river is the longest in the world</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat4a4" value="What is the Nile?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">500</div>
+                            <select class="question-type-select" id="cat4q5type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat4q5">The Great Barrier Reef is located off the coast of this country</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat4a5" value="What is Australia?">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-input-group">
+                    <div class="category-header">
+                        <input type="text" placeholder="Category 5 Name" value="Sports" id="category5Name">
+                    </div>
+                    <div class="question-values">
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">100</div>
+                            <select class="question-type-select" id="cat5q1type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat5q1">This sport uses a puck and ice</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat5a1" value="What is hockey?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">200</div>
+                            <select class="question-type-select" id="cat5q2type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat5q2">The number of players on a basketball team on court</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat5a2" value="What is 5?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">300</div>
+                            <select class="question-type-select" id="cat5q3type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat5q3">This tennis tournament is held in Wimbledon</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat5a3" value="What is Wimbledon Championships?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">400</div>
+                            <select class="question-type-select" id="cat5q4type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat5q4">This athlete has won the most Olympic gold medals</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat5a4" value="Who is Michael Phelps?">
+                        </div>
+                        <div class="question-input-wrapper">
+                            <div class="question-value-label">500</div>
+                            <select class="question-type-select" id="cat5q5type">
+                                <option value="standard">📝 Standard Q&A</option>
+                                <option value="closest">🎯 Closest Number</option>
+                                <option value="creative">💡 Creative/Funny</option>
+                            </select>
+                            <textarea placeholder="Question..." id="cat5q5">The Super Bowl is the championship game for this sport</textarea>
+                            <span class="answer-label">Answer:</span>
+                            <input type="text" placeholder="Correct answer..." id="cat5a5" value="What is American football?">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-apply-questions" onclick="applyQuestionSetup()">Apply Questions to Game Board</button>
+            </div>
+            
+            <div class="buzzer-alert">
+                <div class="buzzer-alert-content">
+                    <div class="buzzer-icon">🔔</div>
+                    <div class="buzzer-info">
+                        <h3>Team Blue buzzed in!</h3>
+                        <p>Player: Sarah Johnson • Time: 0:12 remaining</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-answer-box">
+                <div class="qa-section">
+                    <div class="qa-label">Current Question <span id="questionTypeIndicator" style="color: #6366f1; font-size: 12px;">(📝 Standard)</span></div>
+                    <div class="qa-content" id="judgeQuestionText">
+                        This year marked the signing of the Declaration of Independence
+                    </div>
+                </div>
+                
+                <div class="qa-section">
+                    <div class="qa-label">Correct Answer / Reference</div>
+                    <div class="qa-content answer-content" id="judgeAnswerText">
+                        What is 1776?
+                    </div>
+                </div>
+                
+                <div class="player-response-section">
+                    <div class="qa-label">Player Response</div>
+                    <div class="qa-content player-response" id="judgePlayerResponse">
+                        "What is seventeen seventy-six?"
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scoring-section">
+                <div class="scoring-header">
+                    <h3>Award Points?</h3>
+                    <div class="point-value">300</div>
+                </div>
+                
+                <div class="partial-credit">
+                    <label>Partial Credit:</label>
+                    <input type="range" min="0" max="100" value="100" id="partialCreditSlider" oninput="updatePartialCredit()">
+                    <span class="partial-credit-value" id="partialCreditValue">100%</span>
+                </div>
+                
+                <div class="judge-actions">
+                    <button class="judge-btn btn-correct" onclick="awardPoints('correct')">
+                        <span style="font-size: 24px;">✓</span>
+                        <span>CORRECT</span>
+                    </button>
+                    <button class="judge-btn btn-incorrect" onclick="awardPoints('incorrect')">
+                        <span style="font-size: 24px;">✗</span>
+                        <span>INCORRECT</span>
+                    </button>
+                </div>
+                
+                <div class="override-section">
+                    <h4>Manual Score Override</h4>
+                    <div class="score-adjustment">
+                        <select>
+                            <option>Team Blue</option>
+                            <option>Team Red</option>
+                            <option>Team Green</option>
+                        </select>
+                        <input type="number" placeholder="Points (+ or -)" value="0">
+                    </div>
+                    <button class="btn-apply">Apply Adjustment</button>
+                </div>
+            </div>
+            
+            <div class="answer-history">
+                <h4>📜 Answer History</h4>
+                <div class="history-item correct">
+                    <div class="history-info">
+                        <div class="history-team">Team Green</div>
+                        <div class="history-question">Geography • 200 pts</div>
+                    </div>
+                    <div class="history-result correct">+200</div>
+                </div>
+                <div class="history-item incorrect">
+                    <div class="history-info">
+                        <div class="history-team">Team Red</div>
+                        <div class="history-question">Science • 100 pts</div>
+                    </div>
+                    <div class="history-result incorrect">0</div>
+                </div>
+                <div class="history-item correct">
+                    <div class="history-info">
+                        <div class="history-team">Team Blue</div>
+                        <div class="history-question">Pop Culture • 100 pts</div>
+                    </div>
+                    <div class="history-result correct">+100</div>
+                </div>
+            </div>
+            
+            <div class="notes">
+                <h3>📝 Design Notes - Judge Panel</h3>
+                <ul>
+                    <li>✅ Three question types: Standard Q&A, Closest Number, Creative/Funny</li>
+                    <li>✅ Standard: Traditional trivia with exact answer</li>
+                    <li>✅ Closest Number: Teams guess a number, closest wins (e.g., "How many jelly beans?")</li>
+                    <li>✅ Creative/Funny: Judge picks the best/funniest answer (e.g., "Things you don't want to hear at doctor's")</li>
+                    <li>✅ Question & Category setup - customize all 25 questions and 5 category names</li>
+                    <li>✅ Team picture upload - add custom photos for each team</li>
+                    <li>✅ Support for 2-8 teams with color indicators</li>
+                    <li>✅ Partial credit slider for nuanced scoring (0-100%)</li>
+                    <li>✅ Answer history log tracks all responses and results</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let timerInterval;
+        let timeLeft = 15;
+        let soundEnabled = true;
+        let audioContext;
+        let popupTimerInterval;
+        let popupTimeLeft = 15;
+        let teamPictures = {}; // Store team pictures as base64
+        let customQuestions = {}; // Store custom questions and categories
+        
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // Sound effect functions using Web Audio API
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            initAudio();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'buzzer':
+                    // Buzzer sound - quick beep
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.type = 'square';
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                    
+                case 'correct':
+                    // Correct answer - ascending chime
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    break;
+                    
+                case 'wrong':
+                    // Wrong answer - descending buzz
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    break;
+                    
+                case 'click':
+                    // Board click - short click
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                    
+                case 'timer':
+                    // Timer tick - subtle tick
+                    oscillator.frequency.setValueAtTime(2000, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.05);
+                    break;
+            }
+        }
+        
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (btn) {
+                btn.textContent = soundEnabled ? '🔊' : '🔇';
+                btn.classList.toggle('muted', !soundEnabled);
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerDisplay');
+            if (display) {
+                display.textContent = `0:${timeLeft.toString().padStart(2, '0')}`;
+                display.style.color = timeLeft <= 5 ? '#dc2626' : '#ef4444';
+            }
+        }
+        
+        function startPopupTimer() {
+            clearInterval(popupTimerInterval);
+            popupTimeLeft = 15;
+            updatePopupTimer();
+            
+            popupTimerInterval = setInterval(() => {
+                popupTimeLeft--;
+                updatePopupTimer();
+                
+                // Play tick sound only in last 10 seconds (but not at 0)
+                if (popupTimeLeft <= 10 && popupTimeLeft > 0) {
+                    playSound('timer');
+                }
+                
+                // Only play wrong sound and close when time actually reaches 0
+                if (popupTimeLeft === 0) {
+                    clearInterval(popupTimerInterval);
+                    playSound('wrong'); // Time's up sound
+                    // Auto-close popup after time runs out
+                    setTimeout(() => {
+                        closeQuestionPopup();
+                    }, 1000);
+                }
+            }, 1000);
+        }
+        
+        function updatePopupTimer() {
+            const display = document.getElementById('popupTimer');
+            if (display) {
+                display.textContent = `0:${popupTimeLeft.toString().padStart(2, '0')}`;
+                
+                // Add warning class when time is low
+                if (popupTimeLeft <= 5) {
+                    display.classList.add('warning');
+                } else {
+                    display.classList.remove('warning');
+                }
+            }
+        }
+        
+        // Page initialization can go here if needed
+        
+        function showView(viewId) {
+            document.querySelectorAll('.wireframe').forEach(w => w.classList.remove('active'));
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function markAnswered(cell) {
+            if (!cell.classList.contains('answered')) {
+                // Get the category and value
+                const cellIndex = Array.from(cell.parentElement.children).indexOf(cell);
+                const column = cellIndex % 5;
+                
+                // Get category from the board (in case it was customized)
+                const categoryElements = document.querySelectorAll('.category');
+                const category = categoryElements[column] ? categoryElements[column].textContent : 'Category';
+                const value = cell.textContent;
+                
+                // Check if we have a custom question
+                const questionKey = `${category}-${value}`;
+                let question, answer, type = 'standard';
+                
+                if (customQuestions[questionKey]) {
+                    question = customQuestions[questionKey].question;
+                    answer = customQuestions[questionKey].answer;
+                    type = customQuestions[questionKey].type || 'standard';
+                } else {
+                    // Fallback to default questions
+                    const defaultQuestions = {
+                        'Science-100': { q: 'This planet is known as the Red Planet', a: 'What is Mars?', t: 'standard' },
+                        'Science-200': { q: 'H2O is the chemical formula for this substance', a: 'What is water?', t: 'standard' },
+                        'Science-300': { q: 'This force keeps planets in orbit around the sun', a: 'What is gravity?', t: 'standard' },
+                        'Science-400': { q: 'The smallest unit of life is called this', a: 'What is a cell?', t: 'standard' },
+                        'Science-500': { q: 'This scientist developed the theory of relativity', a: 'Who is Einstein?', t: 'standard' },
+                        'History-100': { q: 'This wall fell in 1989, reuniting Germany', a: 'What is the Berlin Wall?', t: 'standard' },
+                        'History-200': { q: 'The first president of the United States', a: 'Who is George Washington?', t: 'standard' },
+                        'History-300': { q: 'This year marked the signing of the Declaration of Independence', a: 'What is 1776?', t: 'standard' },
+                        'History-400': { q: 'This empire was ruled by Julius Caesar', a: 'What is the Roman Empire?', t: 'standard' },
+                        'History-500': { q: 'World War II ended in this year', a: 'What is 1945?', t: 'standard' },
+                        'Pop Culture-100': { q: 'This streaming service is known for "Stranger Things"', a: 'What is Netflix?', t: 'standard' },
+                        'Pop Culture-200': { q: 'She sang "Bad Romance" and "Poker Face"', a: 'Who is Lady Gaga?', t: 'standard' },
+                        'Pop Culture-300': { q: 'This superhero team includes Iron Man and Captain America', a: 'What is the Avengers?', t: 'standard' },
+                        'Pop Culture-400': { q: 'The highest-grossing film of all time (as of 2023)', a: 'What is Avatar?', t: 'standard' },
+                        'Pop Culture-500': { q: 'This boy wizard attends Hogwarts School', a: 'Who is Harry Potter?', t: 'standard' },
+                        'Geography-100': { q: 'The capital of France', a: 'What is Paris?', t: 'standard' },
+                        'Geography-200': { q: 'This ocean is the largest', a: 'What is the Pacific Ocean?', t: 'standard' },
+                        'Geography-300': { q: 'Mount Everest is located in this mountain range', a: 'What is the Himalayas?', t: 'standard' },
+                        'Geography-400': { q: 'This river is the longest in the world', a: 'What is the Nile?', t: 'standard' },
+                        'Geography-500': { q: 'The Great Barrier Reef is located off the coast of this country', a: 'What is Australia?', t: 'standard' },
+                        'Sports-100': { q: 'This sport uses a puck and ice', a: 'What is hockey?', t: 'standard' },
+                        'Sports-200': { q: 'The number of players on a basketball team on court', a: 'What is 5?', t: 'standard' },
+                        'Sports-300': { q: 'This tennis tournament is held in Wimbledon', a: 'What is Wimbledon Championships?', t: 'standard' },
+                        'Sports-400': { q: 'This athlete has won the most Olympic gold medals', a: 'Who is Michael Phelps?', t: 'standard' },
+                        'Sports-500': { q: 'The Super Bowl is the championship game for this sport', a: 'What is American football?', t: 'standard' }
+                    };
+                    question = defaultQuestions[questionKey]?.q || 'Sample question for ' + category;
+                    answer = defaultQuestions[questionKey]?.a || 'Sample answer';
+                    type = defaultQuestions[questionKey]?.t || 'standard';
+                }
+                
+                // Store current question info for judge panel
+                window.currentQuestion = { question, answer, type, category, value };
+                
+                // Show the popup
+                showQuestionPopup(category, value, question);
+                
+                // Mark as answered after popup is closed
+                cell.classList.add('answered');
+            }
+        }
+        
+        function showQuestionPopup(category, value, question) {
+            const popup = document.getElementById('questionPopup');
+            const popupCategory = document.getElementById('popupCategory');
+            const popupValue = document.getElementById('popupValue');
+            const popupQuestion = document.getElementById('popupQuestion');
+            
+            if (popup && popupCategory && popupValue && popupQuestion) {
+                popupCategory.textContent = category.toUpperCase();
+                popupValue.textContent = value;
+                popupQuestion.textContent = question;
+                popup.classList.add('active');
+                
+                // Start the countdown timer
+                startPopupTimer();
+                
+                // Play click sound when opening question
+                playSound('click');
+            }
+        }
+        
+        function closeQuestionPopup() {
+            const popup = document.getElementById('questionPopup');
+            if (popup) {
+                popup.classList.remove('active');
+                // Stop the timer
+                clearInterval(popupTimerInterval);
+            }
+        }
+        
+        function pressBuzzer(btn) {
+            const status = btn.parentElement.parentElement.querySelector('.buzzer-status');
+            const buzzerBtn = btn;
+            
+            // Play buzzer sound
+            playSound('buzzer');
+            
+            // Vibration feedback (if supported)
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+            
+            // Lock the buzzer
+            buzzerBtn.classList.add('locked');
+            buzzerBtn.textContent = 'LOCKED';
+            
+            status.innerHTML = '<p><strong>Status:</strong> Buzzed in! Waiting for judge...</p><p style="margin-top: 10px; font-size: 14px; color: #f59e0b;">⏳ Buzzer Locked</p>';
+            
+            setTimeout(() => {
+                buzzerBtn.classList.remove('locked');
+                buzzerBtn.textContent = 'BUZZ!';
+                status.innerHTML = '<p><strong>Status:</strong> Ready to buzz in</p><p style="margin-top: 10px; font-size: 14px; color: #10b981;">✓ Buzzer Active • Vibration Enabled</p>';
+            }, 4000);
+        }
+        
+        function updatePartialCredit() {
+            const slider = document.getElementById('partialCreditSlider');
+            const value = document.getElementById('partialCreditValue');
+            const pointDisplay = document.querySelector('.point-value');
+            
+            if (slider && value) {
+                const percent = slider.value;
+                value.textContent = percent + '%';
+                
+                if (pointDisplay) {
+                    const baseValue = 300;
+                    const adjustedValue = Math.round(baseValue * (percent / 100));
+                    pointDisplay.textContent = adjustedValue;
+                }
+            }
+        }
+        
+        function showAnswerOverlay(isCorrect) {
+            const overlay = document.getElementById('answerOverlay');
+            const content = document.getElementById('overlayContent');
+            
+            if (overlay && content) {
+                if (isCorrect) {
+                    content.className = 'overlay-content correct';
+                    content.innerHTML = '<div class="overlay-icon">✓</div><div class="overlay-text">CORRECT!</div><div class="overlay-subtext">Team Blue +$300</div>';
+                } else {
+                    content.className = 'overlay-content incorrect';
+                    content.innerHTML = '<div class="overlay-icon">✗</div><div class="overlay-text">INCORRECT!</div><div class="overlay-subtext">No points awarded</div>';
+                }
+                
+                overlay.classList.add('active');
+                
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 3000);
+            }
+        }
+        
+        function awardPoints(decision) {
+            const alert = document.querySelector('.buzzer-alert');
+            const buzzerIndicator = document.getElementById('buzzerIndicator');
+            const teamScores = document.querySelectorAll('.team-score');
+            
+            // Remove spotlight from all teams
+            teamScores.forEach(team => team.classList.remove('spotlight'));
+            
+            if (decision === 'correct') {
+                alert.style.background = '#d1fae5';
+                alert.style.borderColor = '#10b981';
+                alert.querySelector('h3').textContent = '✓ Correct! +300 points to Team Blue';
+                alert.querySelector('h3').style.color = '#065f46';
+                
+                if (buzzerIndicator) {
+                    buzzerIndicator.className = 'buzzer-indicator active correct';
+                    buzzerIndicator.innerHTML = '✓ <strong>Team Blue</strong> answered correctly!';
+                }
+                
+                // Add spotlight to Team Blue (first team)
+                if (teamScores[0]) {
+                    teamScores[0].classList.add('spotlight');
+                }
+                
+                // Play correct sound
+                playSound('correct');
+                
+                // Show overlay on big screen
+                showAnswerOverlay(true);
+            } else {
+                alert.style.background = '#fee2e2';
+                alert.style.borderColor = '#ef4444';
+                alert.querySelector('h3').textContent = '✗ Incorrect! No points awarded';
+                alert.querySelector('h3').style.color = '#991b1b';
+                
+                if (buzzerIndicator) {
+                    buzzerIndicator.className = 'buzzer-indicator active incorrect';
+                    buzzerIndicator.innerHTML = '✗ <strong>Team Blue</strong> answered incorrectly';
+                }
+                
+                // Play wrong sound
+                playSound('wrong');
+                
+                // Show overlay on big screen
+                showAnswerOverlay(false);
+            }
+            
+            setTimeout(() => {
+                alert.style.background = '#fef3c7';
+                alert.style.borderColor = '#f59e0b';
+                alert.querySelector('h3').textContent = 'Team Blue buzzed in!';
+                alert.querySelector('h3').style.color = '#92400e';
+                
+                if (buzzerIndicator) {
+                    buzzerIndicator.className = 'buzzer-indicator active';
+                    buzzerIndicator.innerHTML = '🔔 <strong>Team Blue</strong> buzzed in! (Sarah Johnson)';
+                }
+                
+                // Remove spotlight
+                teamScores.forEach(team => team.classList.remove('spotlight'));
+            }, 3000);
+        }
+        
+        function applyTeamSetup() {
+            const scoreboard = document.querySelector('.scoreboard');
+            if (!scoreboard) return;
+            
+            // Team configurations
+            const teams = [
+                { 
+                    name: document.getElementById('team1Name').value,
+                    score: document.getElementById('team1Score').value,
+                    active: document.getElementById('team1Active').checked,
+                    color: '#3b82f6',
+                    icon: '🔵'
+                },
+                { 
+                    name: document.getElementById('team2Name').value,
+                    score: document.getElementById('team2Score').value,
+                    active: document.getElementById('team2Active').checked,
+                    color: '#ef4444',
+                    icon: '🔴'
+                },
+                { 
+                    name: document.getElementById('team3Name').value,
+                    score: document.getElementById('team3Score').value,
+                    active: document.getElementById('team3Active').checked,
+                    color: '#10b981',
+                    icon: '🟢'
+                },
+                { 
+                    name: document.getElementById('team4Name').value,
+                    score: document.getElementById('team4Score').value,
+                    active: document.getElementById('team4Active').checked,
+                    color: '#f59e0b',
+                    icon: '🟡'
+                },
+                { 
+                    name: document.getElementById('team5Name').value,
+                    score: document.getElementById('team5Score').value,
+                    active: document.getElementById('team5Active').checked,
+                    color: '#8b5cf6',
+                    icon: '🟣'
+                },
+                { 
+                    name: document.getElementById('team6Name').value,
+                    score: document.getElementById('team6Score').value,
+                    active: document.getElementById('team6Active').checked,
+                    color: '#ec4899',
+                    icon: '🩷'
+                },
+                { 
+                    name: document.getElementById('team7Name').value,
+                    score: document.getElementById('team7Score').value,
+                    active: document.getElementById('team7Active').checked,
+                    color: '#f97316',
+                    icon: '🟠'
+                },
+                { 
+                    name: document.getElementById('team8Name').value,
+                    score: document.getElementById('team8Score').value,
+                    active: document.getElementById('team8Active').checked,
+                    color: '#06b6d4',
+                    icon: '🔷'
+                }
+            ];
+            
+            // Filter active teams
+            const activeTeams = teams.filter(team => team.active);
+            
+            // Validate minimum 2 teams
+            if (activeTeams.length < 2) {
+                alert('⚠️ Please activate at least 2 teams!');
+                return;
+            }
+            
+            // Clear existing teams
+            scoreboard.innerHTML = '';
+            
+            // Add active teams to scoreboard
+            activeTeams.forEach((team, index) => {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-score';
+                teamDiv.style.borderColor = team.color;
+                teamDiv.style.color = team.color;
+                
+                // Check if team has a custom picture
+                const teamKey = `team${teams.indexOf(team) + 1}`;
+                const avatarContent = teamPictures[teamKey] 
+                    ? `<img src="${teamPictures[teamKey]}" alt="${team.name}">`
+                    : team.icon;
+                
+                teamDiv.innerHTML = `
+                    <div class="team-avatar">${avatarContent}</div>
+                    <h3>${team.name.toUpperCase()}</h3>
+                    <div class="score">${parseInt(team.score).toLocaleString()}</div>
+                `;
+                scoreboard.appendChild(teamDiv);
+            });
+            
+            // Show confirmation
+            alert(`Team setup updated! ${activeTeams.length} teams active 🎄`);
+        }
+        
+        function previewTeamPicture(teamNumber) {
+            const fileInput = document.getElementById(`team${teamNumber}Pic`);
+            const preview = document.getElementById(`team${teamNumber}Preview`);
+            
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Store the image data
+                    teamPictures[`team${teamNumber}`] = e.target.result;
+                    
+                    // Update preview in judge panel
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Team ${teamNumber}">`;
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function applyQuestionSetup() {
+            // Store categories
+            const categories = [];
+            for (let i = 1; i <= 5; i++) {
+                const catName = document.getElementById(`category${i}Name`).value;
+                categories.push(catName);
+                
+                // Store questions, answers, and types for this category
+                for (let j = 1; j <= 5; j++) {
+                    const value = j * 100;
+                    const question = document.getElementById(`cat${i}q${j}`).value;
+                    const answer = document.getElementById(`cat${i}a${j}`).value;
+                    const type = document.getElementById(`cat${i}q${j}type`).value;
+                    const key = `${catName}-${value}`;
+                    customQuestions[key] = {
+                        question: question,
+                        answer: answer,
+                        type: type
+                    };
+                }
+            }
+            
+            // Update game board categories
+            const categoryElements = document.querySelectorAll('.category');
+            categoryElements.forEach((elem, index) => {
+                if (categories[index]) {
+                    elem.textContent = categories[index];
+                }
+            });
+            
+            // Reset all questions to unanswered
+            document.querySelectorAll('.question-cell').forEach(cell => {
+                cell.classList.remove('answered');
+            });
+            
+            alert('Questions, answers, types, and categories updated! 🎄');
+        }
+    </script>
+</body>
+</html>
