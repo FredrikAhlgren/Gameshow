@@ -27,34 +27,50 @@ An interactive, multi-screen game show application perfect for Christmas parties
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
+- A Google account (for Firebase)
+- Node.js and npm (for Firebase CLI)
+- Web browser (Chrome, Firefox, Safari, or Edge)
 
-### Installation
+### Option 1: Firebase Hosting (Recommended for Production)
 
-1. **Clone or download this repository**
+**Perfect for actual parties - works across multiple devices anywhere!**
+
+1. **Set up Firebase** (5-10 minutes)
+   - See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for detailed instructions
+   - Create a Firebase project
+   - Configure Firebase Realtime Database
+   - Update `public/js/firebase-config.js` with your credentials
+   - Deploy: `firebase deploy`
+
+2. **Share your live URL** with all players!
+   - Big Screen: `https://YOUR_PROJECT.firebaseapp.com/big-screen.html`
+   - Mobile Buzzer: `https://YOUR_PROJECT.firebaseapp.com/buzzer.html`
+   - Judge Panel: `https://YOUR_PROJECT.firebaseapp.com/judge.html`
+
+### Option 2: Local Testing
+
+**For testing only - all devices must be on same network**
+
+1. **Set up Firebase project** (still needed for database)
+   - Follow steps in [FIREBASE_SETUP.md](FIREBASE_SETUP.md)
+   - Update `public/js/firebase-config.js` with your credentials
+
+2. **Install Firebase CLI**
 ```bash
-cd Gameshow
+npm install -g firebase-tools
+firebase login
 ```
 
-2. **Install dependencies**
+3. **Serve locally**
 ```bash
-npm install
+firebase serve
 ```
 
-3. **Start the server**
-```bash
-npm start
-```
+4. **Open in browsers** on your local network:
+   - Entry page: `http://localhost:5000`
+   - Or use your local IP: `http://192.168.1.100:5000` (replace with your IP)
 
-4. **Open in browsers**
-The server will start on `http://localhost:3000`. You'll see:
-```
-🎄 Christmas Game Show Server running on http://localhost:3000
-📺 Big Screen: http://localhost:3000/big-screen
-📱 Mobile Buzzer: http://localhost:3000/buzzer
-⚖️  Judge Panel: http://localhost:3000/judge
-```
+**Note**: This is a **Firebase application** - no Node.js server needed! All real-time sync happens through Firebase Realtime Database.
 
 ## 🎮 How to Play
 
@@ -160,51 +176,76 @@ The app includes Web Audio API-generated sound effects:
 
 Toggle sound on/off using the sound controls (bottom-right on big screen).
 
-## 🌐 Network Setup
+## 🌐 Deployment Options
 
-### Local Network (Recommended for Parties)
-1. Find your computer's IP address:
-   - **Windows**: `ipconfig` (look for IPv4 Address)
-   - **Mac/Linux**: `ifconfig` or `ip addr` (look for inet)
-2. Start the server: `npm start`
-3. Players connect to: `http://YOUR_IP:3000/buzzer`
-4. Big screen: `http://YOUR_IP:3000/big-screen`
-5. Judge: `http://YOUR_IP:3000/judge`
+### Firebase Hosting (Recommended)
+**Deploy once, play from anywhere!**
 
-Example: If your IP is `192.168.1.100`:
-- Big Screen: `http://192.168.1.100:3000/big-screen`
-- Buzzer: `http://192.168.1.100:3000/buzzer`
-- Judge: `http://192.168.1.100:3000/judge`
-
-### Port Configuration
-Change the port by setting the `PORT` environment variable:
+After following [FIREBASE_SETUP.md](FIREBASE_SETUP.md):
 ```bash
-PORT=8080 npm start
+firebase deploy
 ```
+
+Your app will be live at: `https://YOUR_PROJECT.firebaseapp.com`
+
+**Benefits**:
+- ✅ Works from any device with internet
+- ✅ No server maintenance
+- ✅ Automatic HTTPS
+- ✅ Global CDN for fast loading
+- ✅ Free tier is more than enough
+
+### Local Development
+For testing during development:
+```bash
+firebase serve
+```
+
+Access at `http://localhost:5000` or share your local IP address:
+```
+http://192.168.1.100:5000  (example - use your actual IP)
+```
+
+Find your IP:
+- **Windows**: Run `ipconfig` in Command Prompt
+- **Mac/Linux**: Run `ifconfig` or `ip addr` in Terminal
 
 ## 🛠️ Technical Details
 
 ### Tech Stack
-- **Backend**: Node.js + Express
-- **Real-time**: Socket.io (WebSocket)
+- **Backend**: Firebase Realtime Database (serverless)
+- **Real-time Sync**: Firebase SDK (WebSocket under the hood)
 - **Frontend**: Vanilla JavaScript (no framework dependencies)
+- **Hosting**: Firebase Hosting
 - **Styling**: Pure CSS with gradients and animations
 - **Audio**: Web Audio API
+
+### Architecture
+This is a **serverless application** - no Node.js backend needed!
+
+- All game state stored in Firebase Realtime Database
+- Real-time synchronization via Firebase SDK
+- Client-side JavaScript handles all logic
+- Firebase manages connections, scaling, and reliability
 
 ### File Structure
 ```
 Gameshow/
-├── server.js              # Express + Socket.io server
-├── package.json           # Dependencies
+├── firebase.json          # Firebase hosting configuration
+├── database.rules.json    # Firebase security rules
+├── package.json           # Firebase tools dependency
+├── FIREBASE_SETUP.md      # Setup instructions
 ├── public/
-│   ├── index.html         # Entry page with view selection
+│   ├── index.html         # Entry page
 │   ├── big-screen.html    # Display view
 │   ├── buzzer.html        # Mobile buzzer view
 │   ├── judge.html         # Judge control panel
 │   ├── css/
 │   │   └── style.css      # All styles
 │   └── js/
-│       └── sound-effects.js  # Sound generation
+│       ├── firebase-config.js      # Firebase credentials
+│       ├── firebase-game.js        # Game state management
+│       └── sound-effects.js        # Sound generation
 └── README.md
 ```
 

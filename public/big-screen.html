@@ -61,72 +61,114 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebase-game.js"></script>
     <script src="/js/sound-effects.js"></script>
     <script>
-        const socket = io();
         let gameState = null;
         let popupTimerInterval = null;
         let popupTimeLeft = 15;
+        let previousCurrentQuestion = null;
+        let previousBuzzer = null;
 
-        // Connection status
-        socket.on('connect', () => {
-            document.getElementById('connectionStatus').textContent = '🟢 Connected';
-            document.getElementById('connectionStatus').style.color = '#10b981';
+        // Initialize Firebase and game state
+        initializeGameState().then(() => {
+            console.log('Game state initialized');
         });
 
-        socket.on('disconnect', () => {
-            document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
-            document.getElementById('connectionStatus').style.color = '#ef4444';
+        // Listen for connection status
+        onConnectionChange((connected) => {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = '🟢 Connected';
+                status.style.color = '#10b981';
+            } else {
+                status.textContent = '🔴 Disconnected';
+                status.style.color = '#ef4444';
+            }
         });
 
-        // Receive game state
-        socket.on('gameState', (state) => {
+        // Listen for game state changes
+        onGameStateChange((state) => {
+            const oldState = gameState;
             gameState = state;
+
+            // Render scoreboard and board
             renderScoreboard();
             renderGameBoard();
+
+            // Check if question was selected
+            if (state.currentQuestion && (!previousCurrentQuestion ||
+                state.currentQuestion.selectedAt !== previousCurrentQuestion.selectedAt)) {
+                showQuestionPopup(state.currentQuestion);
+                previousCurrentQuestion = state.currentQuestion;
+            }
+
+            // Check if question was closed
+            if (!state.currentQuestion && previousCurrentQuestion) {
+                closeQuestionPopup();
+                previousCurrentQuestion = null;
+            }
+
+            // Check if someone buzzed in
+            if (state.currentBuzzer && (!previousBuzzer ||
+                state.currentBuzzer.timestamp !== previousBuzzer.timestamp)) {
+                showBuzzerIndicator(state.currentBuzzer);
+                previousBuzzer = state.currentBuzzer;
+            }
+
+            // Check if buzzer was reset
+            if (!state.currentBuzzer && previousBuzzer) {
+                hideBuzzerIndicator();
+                previousBuzzer = null;
+            }
+
+            // Check for scoring changes (answer was judged)
+            if (oldState && state.answerHistory.length > oldState.answerHistory.length) {
+                const latestAnswer = state.answerHistory[0];
+                showAnswerFeedback(latestAnswer);
+            }
         });
 
-        // Question selected
-        socket.on('questionSelected', (question) => {
-            showQuestionPopup(question);
-        });
-
-        // Question closed
-        socket.on('questionClosed', () => {
-            closeQuestionPopup();
-        });
-
-        // Buzzer pressed
-        socket.on('buzzerPressed', (data) => {
+        function showBuzzerIndicator(buzzer) {
             const indicator = document.getElementById('buzzerIndicator');
             const teamNameEl = document.getElementById('buzzerTeamName');
             const playerNameEl = document.getElementById('buzzerPlayerName');
 
-            teamNameEl.textContent = data.teamName;
-            playerNameEl.textContent = data.playerName;
+            teamNameEl.textContent = buzzer.teamName;
+            playerNameEl.textContent = buzzer.playerName;
             indicator.classList.remove('correct', 'incorrect');
             indicator.classList.add('active');
 
             playSound('buzzer');
-        });
+        }
 
-        // Answer judged
-        socket.on('answerJudged', (data) => {
+        function hideBuzzerIndicator() {
+            const indicator = document.getElementById('buzzerIndicator');
+            indicator.classList.remove('active', 'correct', 'incorrect');
+        }
+
+        function showAnswerFeedback(answer) {
             const indicator = document.getElementById('buzzerIndicator');
 
-            if (data.correct) {
+            if (answer.correct) {
                 indicator.classList.add('correct');
-                indicator.innerHTML = `✓ <strong>${data.teamName}</strong> answered correctly! +${data.points} points`;
-                showAnswerOverlay(true, data.teamName, data.points);
+                indicator.innerHTML = `✓ <strong>${answer.teamName}</strong> answered correctly! +${answer.points} points`;
+                showAnswerOverlay(true, answer.teamName, answer.points);
                 playSound('correct');
 
                 // Spotlight effect
                 setTimeout(() => {
                     const teamScores = document.querySelectorAll('.team-score');
-                    const team = gameState.teams.find(t => t.id === data.teamId);
+                    const team = gameState.teams.find(t => t.name === answer.teamName);
                     if (team) {
-                        const teamIndex = gameState.teams.indexOf(team);
+                        const activeTeams = gameState.teams.filter(t => t.active);
+                        const teamIndex = activeTeams.indexOf(team);
                         if (teamScores[teamIndex]) {
                             teamScores[teamIndex].classList.add('spotlight');
                             setTimeout(() => {
@@ -137,21 +179,15 @@
                 }, 500);
             } else {
                 indicator.classList.add('incorrect');
-                indicator.innerHTML = `✗ <strong>${data.teamName}</strong> answered incorrectly`;
-                showAnswerOverlay(false, data.teamName);
+                indicator.innerHTML = `✗ <strong>${answer.teamName}</strong> answered incorrectly`;
+                showAnswerOverlay(false, answer.teamName);
                 playSound('wrong');
             }
 
             setTimeout(() => {
                 indicator.classList.remove('active', 'correct', 'incorrect');
             }, 3000);
-        });
-
-        // Reset buzzer
-        socket.on('resetBuzzer', () => {
-            const indicator = document.getElementById('buzzerIndicator');
-            indicator.classList.remove('active', 'correct', 'incorrect');
-        });
+        }
 
         function renderScoreboard() {
             const scoreboard = document.getElementById('scoreboard');
@@ -187,17 +223,17 @@
                     const answered = question ? question.answered : false;
                     const classes = answered ? 'question-cell answered' : 'question-cell';
 
-                    html += `<div class="${classes}" onclick="selectQuestion('${category}', ${value})">${value}</div>`;
+                    html += `<div class="${classes}" onclick="handleSelectQuestion('${category}', ${value})">${value}</div>`;
                 });
             }
 
             board.innerHTML = html;
         }
 
-        function selectQuestion(category, value) {
+        function handleSelectQuestion(category, value) {
             const question = gameState.questions[category]?.find(q => q.value === value);
             if (question && !question.answered) {
-                socket.emit('selectQuestion', { category, value });
+                selectQuestion(category, value);
                 playSound('click');
             }
         }
@@ -239,7 +275,7 @@
                     clearInterval(popupTimerInterval);
                     playSound('wrong');
                     setTimeout(() => {
-                        socket.emit('closeQuestion');
+                        closeQuestion();
                     }, 1000);
                 }
             }, 1000);
