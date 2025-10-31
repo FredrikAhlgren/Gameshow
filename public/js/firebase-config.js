@@ -3,15 +3,15 @@
 // Get these from: Firebase Console > Project Settings > General > Your apps > Web app
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBYivAN0bwc_05464rxmmBpeKFstVLYLcY",
+  authDomain: "trolldeg.firebaseapp.com",
+  databaseURL: "https://trolldeg-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trolldeg",
+  storageBucket: "trolldeg.firebasestorage.app",
+  messagingSenderId: "465953155417",
+  appId: "1:465953155417:web:97cfa5367850d465990448",
+  measurementId: "G-VB9VKP9BFP"
 };
-
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
