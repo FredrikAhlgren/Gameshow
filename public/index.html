@@ -49,19 +49,34 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebase-game.js"></script>
     <script>
-        const socket = io();
         const indicator = document.getElementById('connectionIndicator');
 
-        socket.on('connect', () => {
-            indicator.innerHTML = '🟢 Connected';
-            indicator.style.color = '#10b981';
+        // Listen for connection status
+        onConnectionChange((connected) => {
+            if (connected) {
+                indicator.innerHTML = '🟢 Connected to Firebase';
+                indicator.style.color = '#10b981';
+            } else {
+                indicator.innerHTML = '🔴 Disconnected';
+                indicator.style.color = '#ef4444';
+            }
         });
 
-        socket.on('disconnect', () => {
-            indicator.innerHTML = '🔴 Disconnected';
-            indicator.style.color = '#ef4444';
+        // Initialize game state
+        initializeGameState().then(() => {
+            console.log('Game state initialized');
+        }).catch((error) => {
+            console.error('Error initializing game:', error);
+            indicator.innerHTML = '⚠️ Setup Required - See FIREBASE_SETUP.md';
+            indicator.style.color = '#f59e0b';
         });
     </script>
 </body>
