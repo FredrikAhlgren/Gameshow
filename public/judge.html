@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Panel - Christmas Game Show</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container judge-panel">
+        <div class="judge-header">
+            <h2>⚖️ JUDGE CONTROL PANEL</h2>
+            <p id="connectionStatus">Connecting...</p>
+        </div>
+
+        <!-- Team Setup -->
+        <div class="team-setup">
+            <h3>🎄 Team Setup</h3>
+            <div id="teamInputs">
+                <!-- Team inputs will be generated here -->
+            </div>
+            <button class="btn-apply-teams" onclick="applyTeamSetup()">Apply Team Changes</button>
+        </div>
+
+        <!-- Question Setup -->
+        <div class="question-setup">
+            <h3>🎄 Question & Category Setup</h3>
+            <div id="categoryInputs">
+                <!-- Category and question inputs will be generated here -->
+            </div>
+            <button class="btn-apply-questions" onclick="applyQuestionSetup()">Apply Questions to Game Board</button>
+        </div>
+
+        <!-- Buzzer Alert -->
+        <div class="buzzer-alert" id="buzzerAlert" style="display: none;">
+            <div class="buzzer-alert-content">
+                <div class="buzzer-icon">🔔</div>
+                <div class="buzzer-info">
+                    <h3 id="buzzerAlertText">Waiting for buzzer...</h3>
+                    <p id="buzzerAlertSubtext">No one has buzzed in yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question and Answer Box -->
+        <div class="question-answer-box" id="qaBox" style="display: none;">
+            <div class="qa-section">
+                <div class="qa-label">
+                    Current Question
+                    <span id="questionTypeIndicator" style="color: #6366f1; font-size: 12px;">(📝 Standard)</span>
+                </div>
+                <div class="qa-content" id="currentQuestion">
+                    No question selected
+                </div>
+            </div>
+
+            <div class="qa-section">
+                <div class="qa-label">Correct Answer / Reference</div>
+                <div class="qa-content answer-content" id="correctAnswer">
+                    --
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div class="scoring-section" id="scoringSection" style="display: none;">
+            <div class="scoring-header">
+                <h3>Award Points?</h3>
+                <div class="point-value" id="pointValue">0</div>
+            </div>
+
+            <div class="partial-credit">
+                <label>Partial Credit:</label>
+                <input type="range" min="0" max="100" value="100" id="partialCreditSlider" oninput="updatePartialCredit()">
+                <span class="partial-credit-value" id="partialCreditValue">100%</span>
+            </div>
+
+            <div class="judge-actions">
+                <button class="judge-btn btn-correct" onclick="judgeAnswer(true)">
+                    <span style="font-size: 24px;">✓</span>
+                    <span>CORRECT</span>
+                </button>
+                <button class="judge-btn btn-incorrect" onclick="judgeAnswer(false)">
+                    <span style="font-size: 24px;">✗</span>
+                    <span>INCORRECT</span>
+                </button>
+            </div>
+
+            <div class="override-section">
+                <h4>Manual Score Override</h4>
+                <div class="score-adjustment">
+                    <select id="overrideTeamSelect">
+                        <option value="">-- Select Team --</option>
+                    </select>
+                    <input type="number" id="overridePoints" placeholder="Points (+ or -)" value="0">
+                </div>
+                <button class="btn-apply" onclick="applyScoreOverride()">Apply Adjustment</button>
+            </div>
+        </div>
+
+        <!-- Answer History -->
+        <div class="answer-history">
+            <h4>📜 Answer History</h4>
+            <div id="historyList">
+                <p style="color: #999; text-align: center;">No answers yet</p>
+            </div>
+        </div>
+
+        <!-- Reset Game Button -->
+        <button class="btn-reset-game" onclick="resetGame()">🔄 Reset Game</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let gameState = null;
+        let currentBuzzer = null;
+        let currentQuestionData = null;
+        let teamPictures = {};
+
+        const defaultTeams = [
+            { id: 1, name: 'Team Blue', score: 0, color: '#3b82f6', icon: '🔵', active: true, picture: null },
+            { id: 2, name: 'Team Red', score: 0, color: '#ef4444', icon: '🔴', active: true, picture: null },
+            { id: 3, name: 'Team Green', score: 0, color: '#10b981', icon: '🟢', active: true, picture: null },
+            { id: 4, name: 'Team Yellow', score: 0, color: '#f59e0b', icon: '🟡', active: false, picture: null },
+            { id: 5, name: 'Team Purple', score: 0, color: '#8b5cf6', icon: '🟣', active: false, picture: null },
+            { id: 6, name: 'Team Pink', score: 0, color: '#ec4899', icon: '🩷', active: false, picture: null },
+            { id: 7, name: 'Team Orange', score: 0, color: '#f97316', icon: '🟠', active: false, picture: null },
+            { id: 8, name: 'Team Cyan', score: 0, color: '#06b6d4', icon: '🔷', active: false, picture: null }
+        ];
+
+        // Connection status
+        socket.on('connect', () => {
+            document.getElementById('connectionStatus').textContent = '🟢 Connected';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+            document.getElementById('connectionStatus').style.color = '#ef4444';
+        });
+
+        // Receive game state
+        socket.on('gameState', (state) => {
+            gameState = state;
+            renderTeamInputs();
+            renderCategoryInputs();
+            updateOverrideTeamSelect();
+            renderHistory();
+        });
+
+        // Question selected
+        socket.on('questionSelected', (question) => {
+            currentQuestionData = question;
+            showQuestionBox(question);
+        });
+
+        // Buzzer pressed
+        socket.on('buzzerPressed', (data) => {
+            currentBuzzer = data;
+            showBuzzerAlert(data);
+            showScoringSection();
+        });
+
+        // Reset buzzer
+        socket.on('resetBuzzer', () => {
+            hideBuzzerAlert();
+            hideScoringSection();
+            hideQuestionBox();
+            currentBuzzer = null;
+            currentQuestionData = null;
+        });
+
+        function renderTeamInputs() {
+            const container = document.getElementById('teamInputs');
+            if (!gameState) return;
+
+            // Merge default teams with current game state
+            const teams = defaultTeams.map(defaultTeam => {
+                const existingTeam = gameState.teams.find(t => t.id === defaultTeam.id);
+                return existingTeam || defaultTeam;
+            });
+
+            container.innerHTML = teams.map((team, index) => `
+                <div class="team-input-group">
+                    <div class="team-color-indicator" style="color: ${team.color};" id="teamPreview${team.id}">
+                        ${team.picture ? `<img src="${team.picture}" alt="${team.name}">` : team.icon}
+                    </div>
+                    <div class="team-input-fields">
+                        <input type="text" placeholder="Team Name" value="${team.name}" id="teamName${team.id}">
+                        <input type="number" placeholder="Score" value="${team.score}" id="teamScore${team.id}">
+                        <div class="team-picture-upload">
+                            <button class="team-picture-btn" onclick="document.getElementById('teamPic${team.id}').click()">📷 Picture</button>
+                            <input type="file" class="team-picture-input" id="teamPic${team.id}" accept="image/*" onchange="previewTeamPicture(${team.id})">
+                        </div>
+                    </div>
+                    <div class="team-active-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${team.active ? 'checked' : ''} id="teamActive${team.id}">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategoryInputs() {
+            const container = document.getElementById('categoryInputs');
+            if (!gameState) return;
+
+            container.innerHTML = gameState.categories.map((category, catIndex) => {
+                const questions = gameState.questions[category] || [];
+
+                return `
+                    <div class="category-input-group">
+                        <div class="category-header">
+                            <input type="text" placeholder="Category ${catIndex + 1} Name" value="${category}" id="category${catIndex}Name">
+                        </div>
+                        <div class="question-values">
+                            ${[100, 200, 300, 400, 500].map((value, qIndex) => {
+                                const question = questions.find(q => q.value === value) || { question: '', answer: '', type: 'standard' };
+                                return `
+                                    <div class="question-input-wrapper">
+                                        <div class="question-value-label">${value}</div>
+                                        <select class="question-type-select" id="cat${catIndex}q${qIndex}type">
+                                            <option value="standard" ${question.type === 'standard' ? 'selected' : ''}>📝 Standard Q&A</option>
+                                            <option value="closest" ${question.type === 'closest' ? 'selected' : ''}>🎯 Closest Number</option>
+                                            <option value="creative" ${question.type === 'creative' ? 'selected' : ''}>💡 Creative/Funny</option>
+                                        </select>
+                                        <textarea placeholder="Question..." id="cat${catIndex}q${qIndex}">${question.question}</textarea>
+                                        <span class="answer-label">Answer:</span>
+                                        <input type="text" placeholder="Correct answer..." id="cat${catIndex}a${qIndex}" value="${question.answer}">
+                                        <span class="type-hint">Standard: Exact | Closest: Number | Creative: Judge picks</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function previewTeamPicture(teamId) {
+            const fileInput = document.getElementById(`teamPic${teamId}`);
+            const preview = document.getElementById(`teamPreview${teamId}`);
+
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    teamPictures[teamId] = e.target.result;
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Team ${teamId}">`;
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyTeamSetup() {
+            const teams = defaultTeams.map(team => ({
+                id: team.id,
+                name: document.getElementById(`teamName${team.id}`).value || team.name,
+                score: parseInt(document.getElementById(`teamScore${team.id}`).value) || 0,
+                color: team.color,
+                icon: team.icon,
+                active: document.getElementById(`teamActive${team.id}`).checked,
+                picture: teamPictures[team.id] || null
+            }));
+
+            const activeCount = teams.filter(t => t.active).length;
+            if (activeCount < 2) {
+                alert('⚠️ Please activate at least 2 teams!');
+                return;
+            }
+
+            socket.emit('updateTeams', teams);
+            alert(`✅ Team setup updated! ${activeCount} teams active 🎄`);
+        }
+
+        function applyQuestionSetup() {
+            const categories = [];
+            const questions = {};
+
+            for (let catIndex = 0; catIndex < 5; catIndex++) {
+                const catName = document.getElementById(`category${catIndex}Name`).value;
+                categories.push(catName);
+                questions[catName] = [];
+
+                for (let qIndex = 0; qIndex < 5; qIndex++) {
+                    const value = (qIndex + 1) * 100;
+                    const question = document.getElementById(`cat${catIndex}q${qIndex}`).value;
+                    const answer = document.getElementById(`cat${catIndex}a${qIndex}`).value;
+                    const type = document.getElementById(`cat${catIndex}q${qIndex}type`).value;
+
+                    questions[catName].push({
+                        value,
+                        question,
+                        answer,
+                        type,
+                        answered: false
+                    });
+                }
+            }
+
+            socket.emit('updateQuestions', { categories, questions });
+            alert('✅ Questions, answers, types, and categories updated! 🎄');
+        }
+
+        function showBuzzerAlert(data) {
+            const alert = document.getElementById('buzzerAlert');
+            const text = document.getElementById('buzzerAlertText');
+            const subtext = document.getElementById('buzzerAlertSubtext');
+
+            text.textContent = `${data.teamName} buzzed in!`;
+            subtext.textContent = `Player: ${data.playerName}`;
+            alert.style.display = 'flex';
+        }
+
+        function hideBuzzerAlert() {
+            const alert = document.getElementById('buzzerAlert');
+            alert.style.display = 'none';
+        }
+
+        function showQuestionBox(question) {
+            const box = document.getElementById('qaBox');
+            const questionEl = document.getElementById('currentQuestion');
+            const answerEl = document.getElementById('correctAnswer');
+            const typeIndicator = document.getElementById('questionTypeIndicator');
+
+            const typeIcons = {
+                'standard': '📝 Standard Q&A',
+                'closest': '🎯 Closest Number',
+                'creative': '💡 Creative/Funny'
+            };
+
+            typeIndicator.textContent = `(${typeIcons[question.type] || '📝 Standard'})`;
+            questionEl.textContent = question.question;
+            answerEl.textContent = question.answer;
+            box.style.display = 'block';
+
+            // Set point value
+            document.getElementById('pointValue').textContent = question.value;
+        }
+
+        function hideQuestionBox() {
+            const box = document.getElementById('qaBox');
+            box.style.display = 'none';
+        }
+
+        function showScoringSection() {
+            const section = document.getElementById('scoringSection');
+            section.style.display = 'block';
+        }
+
+        function hideScoringSection() {
+            const section = document.getElementById('scoringSection');
+            section.style.display = 'none';
+        }
+
+        function updatePartialCredit() {
+            const slider = document.getElementById('partialCreditSlider');
+            const value = document.getElementById('partialCreditValue');
+            const pointDisplay = document.getElementById('pointValue');
+
+            const percent = slider.value;
+            value.textContent = percent + '%';
+
+            if (currentQuestionData) {
+                const adjustedValue = Math.round(currentQuestionData.value * (percent / 100));
+                pointDisplay.textContent = adjustedValue;
+            }
+        }
+
+        function judgeAnswer(isCorrect) {
+            if (!currentBuzzer || !currentQuestionData) {
+                alert('No active buzzer or question!');
+                return;
+            }
+
+            const partialPercent = parseInt(document.getElementById('partialCreditSlider').value);
+            const points = Math.round(currentQuestionData.value * (partialPercent / 100));
+
+            socket.emit('judgeAnswer', {
+                correct: isCorrect,
+                teamId: currentBuzzer.teamId,
+                points: points,
+                playerResponse: '' // Could add text input for this
+            });
+
+            // Reset partial credit slider
+            document.getElementById('partialCreditSlider').value = 100;
+            updatePartialCredit();
+        }
+
+        function updateOverrideTeamSelect() {
+            const select = document.getElementById('overrideTeamSelect');
+            if (!gameState) return;
+
+            const activeTeams = gameState.teams.filter(t => t.active);
+            select.innerHTML = '<option value="">-- Select Team --</option>' +
+                activeTeams.map(team =>
+                    `<option value="${team.id}">${team.icon} ${team.name}</option>`
+                ).join('');
+        }
+
+        function applyScoreOverride() {
+            const teamId = parseInt(document.getElementById('overrideTeamSelect').value);
+            const points = parseInt(document.getElementById('overridePoints').value) || 0;
+
+            if (!teamId) {
+                alert('Please select a team!');
+                return;
+            }
+
+            socket.emit('adjustScore', { teamId, points });
+            document.getElementById('overridePoints').value = 0;
+            alert(`Score adjusted by ${points > 0 ? '+' : ''}${points} points!`);
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if (!gameState || !gameState.answerHistory || gameState.answerHistory.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">No answers yet</p>';
+                return;
+            }
+
+            container.innerHTML = gameState.answerHistory.slice(0, 10).map(item => `
+                <div class="history-item ${item.correct ? 'correct' : 'incorrect'}">
+                    <div class="history-info">
+                        <div class="history-team">${item.teamName}</div>
+                        <div class="history-question">${item.category} • ${item.value} pts</div>
+                    </div>
+                    <div class="history-result ${item.correct ? 'correct' : 'incorrect'}">
+                        ${item.correct ? '+' + item.points : '0'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset the game? This will clear all scores and mark all questions as unanswered.')) {
+                socket.emit('resetGame');
+                alert('Game has been reset! 🎄');
+            }
+        }
+    </script>
+</body>
+</html>
