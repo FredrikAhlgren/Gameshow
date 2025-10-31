@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Screen Display - Christmas Game Show</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sound-controls">
+            <span style="font-size: 14px; color: #666;">Sound Effects:</span>
+            <button class="sound-btn" id="soundToggle" onclick="toggleSound()" title="Toggle Sound">
+                🔊
+            </button>
+            <button class="sound-btn" onclick="playSound('buzzer')" title="Test Buzzer">
+                🔔
+            </button>
+            <button class="sound-btn" onclick="playSound('correct')" title="Test Correct">
+                ✓
+            </button>
+            <button class="sound-btn" onclick="playSound('wrong')" title="Test Wrong">
+                ✗
+            </button>
+        </div>
+
+        <div class="screen-header">
+            <h2>🎄 CHRISTMAS GAMES 🎅</h2>
+            <p id="connectionStatus">Connecting...</p>
+        </div>
+
+        <div class="buzzer-indicator" id="buzzerIndicator">
+            🔔 <strong id="buzzerTeamName">Team</strong> buzzed in! (<span id="buzzerPlayerName">Player</span>)
+        </div>
+
+        <div class="answer-overlay" id="answerOverlay">
+            <div class="overlay-content" id="overlayContent">
+                <div class="overlay-icon" id="overlayIcon">✓</div>
+                <div class="overlay-text" id="overlayText">CORRECT!</div>
+                <div class="overlay-subtext" id="overlaySubtext">+300 points</div>
+            </div>
+        </div>
+
+        <div class="question-popup" id="questionPopup">
+            <div class="popup-content">
+                <div class="popup-category" id="popupCategory">CATEGORY</div>
+                <div class="popup-value" id="popupValue">100</div>
+                <div class="popup-question" id="popupQuestion">
+                    Question text goes here
+                </div>
+                <div class="popup-timer" id="popupTimer">0:15</div>
+            </div>
+        </div>
+
+        <div class="scoreboard" id="scoreboard">
+            <!-- Teams will be populated here -->
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- Game board will be populated here -->
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/sound-effects.js"></script>
+    <script>
+        const socket = io();
+        let gameState = null;
+        let popupTimerInterval = null;
+        let popupTimeLeft = 15;
+
+        // Connection status
+        socket.on('connect', () => {
+            document.getElementById('connectionStatus').textContent = '🟢 Connected';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+            document.getElementById('connectionStatus').style.color = '#ef4444';
+        });
+
+        // Receive game state
+        socket.on('gameState', (state) => {
+            gameState = state;
+            renderScoreboard();
+            renderGameBoard();
+        });
+
+        // Question selected
+        socket.on('questionSelected', (question) => {
+            showQuestionPopup(question);
+        });
+
+        // Question closed
+        socket.on('questionClosed', () => {
+            closeQuestionPopup();
+        });
+
+        // Buzzer pressed
+        socket.on('buzzerPressed', (data) => {
+            const indicator = document.getElementById('buzzerIndicator');
+            const teamNameEl = document.getElementById('buzzerTeamName');
+            const playerNameEl = document.getElementById('buzzerPlayerName');
+
+            teamNameEl.textContent = data.teamName;
+            playerNameEl.textContent = data.playerName;
+            indicator.classList.remove('correct', 'incorrect');
+            indicator.classList.add('active');
+
+            playSound('buzzer');
+        });
+
+        // Answer judged
+        socket.on('answerJudged', (data) => {
+            const indicator = document.getElementById('buzzerIndicator');
+
+            if (data.correct) {
+                indicator.classList.add('correct');
+                indicator.innerHTML = `✓ <strong>${data.teamName}</strong> answered correctly! +${data.points} points`;
+                showAnswerOverlay(true, data.teamName, data.points);
+                playSound('correct');
+
+                // Spotlight effect
+                setTimeout(() => {
+                    const teamScores = document.querySelectorAll('.team-score');
+                    const team = gameState.teams.find(t => t.id === data.teamId);
+                    if (team) {
+                        const teamIndex = gameState.teams.indexOf(team);
+                        if (teamScores[teamIndex]) {
+                            teamScores[teamIndex].classList.add('spotlight');
+                            setTimeout(() => {
+                                teamScores[teamIndex].classList.remove('spotlight');
+                            }, 3000);
+                        }
+                    }
+                }, 500);
+            } else {
+                indicator.classList.add('incorrect');
+                indicator.innerHTML = `✗ <strong>${data.teamName}</strong> answered incorrectly`;
+                showAnswerOverlay(false, data.teamName);
+                playSound('wrong');
+            }
+
+            setTimeout(() => {
+                indicator.classList.remove('active', 'correct', 'incorrect');
+            }, 3000);
+        });
+
+        // Reset buzzer
+        socket.on('resetBuzzer', () => {
+            const indicator = document.getElementById('buzzerIndicator');
+            indicator.classList.remove('active', 'correct', 'incorrect');
+        });
+
+        function renderScoreboard() {
+            const scoreboard = document.getElementById('scoreboard');
+            if (!gameState) return;
+
+            const activeTeams = gameState.teams.filter(t => t.active);
+            scoreboard.innerHTML = activeTeams.map(team => `
+                <div class="team-score" style="border-color: ${team.color}; color: ${team.color};">
+                    <div class="team-avatar">
+                        ${team.picture ? `<img src="${team.picture}" alt="${team.name}">` : team.icon}
+                    </div>
+                    <h3>${team.name.toUpperCase()}</h3>
+                    <div class="score">${team.score.toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderGameBoard() {
+            const board = document.getElementById('gameBoard');
+            if (!gameState) return;
+
+            let html = '';
+
+            // Categories
+            gameState.categories.forEach(category => {
+                html += `<div class="category">${category}</div>`;
+            });
+
+            // Questions
+            for (let value = 100; value <= 500; value += 100) {
+                gameState.categories.forEach(category => {
+                    const question = gameState.questions[category]?.find(q => q.value === value);
+                    const answered = question ? question.answered : false;
+                    const classes = answered ? 'question-cell answered' : 'question-cell';
+
+                    html += `<div class="${classes}" onclick="selectQuestion('${category}', ${value})">${value}</div>`;
+                });
+            }
+
+            board.innerHTML = html;
+        }
+
+        function selectQuestion(category, value) {
+            const question = gameState.questions[category]?.find(q => q.value === value);
+            if (question && !question.answered) {
+                socket.emit('selectQuestion', { category, value });
+                playSound('click');
+            }
+        }
+
+        function showQuestionPopup(question) {
+            const popup = document.getElementById('questionPopup');
+            const popupCategory = document.getElementById('popupCategory');
+            const popupValue = document.getElementById('popupValue');
+            const popupQuestion = document.getElementById('popupQuestion');
+
+            popupCategory.textContent = question.category.toUpperCase();
+            popupValue.textContent = question.value;
+            popupQuestion.textContent = question.question;
+
+            popup.classList.add('active');
+            startPopupTimer();
+        }
+
+        function closeQuestionPopup() {
+            const popup = document.getElementById('questionPopup');
+            popup.classList.remove('active');
+            clearInterval(popupTimerInterval);
+        }
+
+        function startPopupTimer() {
+            clearInterval(popupTimerInterval);
+            popupTimeLeft = 15;
+            updatePopupTimer();
+
+            popupTimerInterval = setInterval(() => {
+                popupTimeLeft--;
+                updatePopupTimer();
+
+                if (popupTimeLeft <= 10 && popupTimeLeft > 0) {
+                    playSound('timer');
+                }
+
+                if (popupTimeLeft === 0) {
+                    clearInterval(popupTimerInterval);
+                    playSound('wrong');
+                    setTimeout(() => {
+                        socket.emit('closeQuestion');
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function updatePopupTimer() {
+            const display = document.getElementById('popupTimer');
+            display.textContent = `0:${popupTimeLeft.toString().padStart(2, '0')}`;
+
+            if (popupTimeLeft <= 5) {
+                display.classList.add('warning');
+            } else {
+                display.classList.remove('warning');
+            }
+        }
+
+        function showAnswerOverlay(isCorrect, teamName, points = 0) {
+            const overlay = document.getElementById('answerOverlay');
+            const content = document.getElementById('overlayContent');
+            const icon = document.getElementById('overlayIcon');
+            const text = document.getElementById('overlayText');
+            const subtext = document.getElementById('overlaySubtext');
+
+            if (isCorrect) {
+                content.className = 'overlay-content correct';
+                icon.textContent = '✓';
+                text.textContent = 'CORRECT!';
+                subtext.textContent = `${teamName} +${points} points`;
+            } else {
+                content.className = 'overlay-content incorrect';
+                icon.textContent = '✗';
+                text.textContent = 'INCORRECT!';
+                subtext.textContent = `${teamName} - No points awarded`;
+            }
+
+            overlay.classList.add('active');
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

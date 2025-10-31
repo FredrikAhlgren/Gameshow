@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Game Show</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container entry-screen">
+        <h1>🎄 Christmas Game Show 🎅</h1>
+        <p class="subtitle">Choose your view to get started</p>
+
+        <div class="view-cards">
+            <a href="/big-screen" class="view-card big-screen-card">
+                <div class="card-icon">📺</div>
+                <h2>Big Screen Display</h2>
+                <p>Show the game board, questions, and scores on the main display</p>
+                <div class="card-badge">For TV/Projector</div>
+            </a>
+
+            <a href="/buzzer" class="view-card buzzer-card">
+                <div class="card-icon">📱</div>
+                <h2>Mobile Buzzer</h2>
+                <p>Use your phone to buzz in and answer questions</p>
+                <div class="card-badge">For Players</div>
+            </a>
+
+            <a href="/judge" class="view-card judge-card">
+                <div class="card-icon">⚖️</div>
+                <h2>Judge Panel</h2>
+                <p>Control the game, manage teams, and score answers</p>
+                <div class="card-badge">For Host</div>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <h3>How to Play</h3>
+            <ol>
+                <li><strong>Host:</strong> Open the Judge Panel to set up teams and questions</li>
+                <li><strong>Display:</strong> Open Big Screen Display on your TV or projector</li>
+                <li><strong>Players:</strong> Each player opens Mobile Buzzer on their phone</li>
+                <li><strong>Play:</strong> Select questions, buzz in, and compete for points!</li>
+            </ol>
+        </div>
+
+        <div class="connection-status">
+            <span id="connectionIndicator">🔴 Connecting...</span>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const indicator = document.getElementById('connectionIndicator');
+
+        socket.on('connect', () => {
+            indicator.innerHTML = '🟢 Connected';
+            indicator.style.color = '#10b981';
+        });
+
+        socket.on('disconnect', () => {
+            indicator.innerHTML = '🔴 Disconnected';
+            indicator.style.color = '#ef4444';
+        });
+    </script>
+</body>
+</html>

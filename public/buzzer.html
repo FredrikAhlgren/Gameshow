@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Buzzer - Christmas Game Show</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container mobile-buzzer">
+        <div class="phone-frame">
+            <div class="mobile-header">
+                <h2>Christmas Games Buzzer</h2>
+                <p id="connectionStatus">Connecting...</p>
+            </div>
+
+            <div class="player-name-input">
+                <label>Your Name:</label>
+                <input type="text" id="playerName" placeholder="Enter your name" value="">
+            </div>
+
+            <div class="team-selector">
+                <label>Select Your Team:</label>
+                <select id="teamSelect">
+                    <option value="">-- Select Team --</option>
+                </select>
+            </div>
+
+            <div class="buzzer-container">
+                <button class="buzzer-button locked" id="buzzerButton" onclick="pressBuzzer()">
+                    BUZZ!
+                </button>
+            </div>
+
+            <div class="buzzer-status" id="buzzerStatus">
+                <p><strong>Status:</strong> Select your team to begin</p>
+                <p style="margin-top: 10px; font-size: 14px; color: #999;">
+                    ⏳ Waiting...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/sound-effects.js"></script>
+    <script>
+        const socket = io();
+        let gameState = null;
+        let selectedTeamId = null;
+        let buzzerLocked = true;
+
+        // Connection status
+        socket.on('connect', () => {
+            document.getElementById('connectionStatus').textContent = '🟢 Connected';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+            document.getElementById('connectionStatus').style.color = '#ef4444';
+        });
+
+        // Receive game state
+        socket.on('gameState', (state) => {
+            gameState = state;
+            populateTeamSelect();
+            updateBuzzerStatus();
+        });
+
+        // Question selected - enable buzzer
+        socket.on('questionSelected', (question) => {
+            buzzerLocked = false;
+            updateBuzzerButton();
+            updateStatus('Ready to buzz in!', '#10b981');
+        });
+
+        // Buzzer pressed
+        socket.on('buzzerPressed', (data) => {
+            buzzerLocked = true;
+            updateBuzzerButton();
+
+            const playerName = document.getElementById('playerName').value || 'Anonymous';
+            const selectedTeam = gameState.teams.find(t => t.id === selectedTeamId);
+
+            if (data.teamName === selectedTeam?.name && data.playerName === playerName) {
+                updateStatus('You buzzed in! Waiting for judge...', '#f59e0b');
+                playSound('buzzer');
+            } else {
+                updateStatus(`${data.teamName} (${data.playerName}) buzzed in first!`, '#ef4444');
+            }
+        });
+
+        // Answer judged
+        socket.on('answerJudged', (data) => {
+            const selectedTeam = gameState.teams.find(t => t.id === selectedTeamId);
+
+            if (data.teamId === selectedTeamId) {
+                if (data.correct) {
+                    updateStatus(`Correct! +${data.points} points!`, '#10b981');
+                    playSound('correct');
+                } else {
+                    updateStatus('Incorrect. Better luck next time!', '#ef4444');
+                    playSound('wrong');
+                }
+            }
+        });
+
+        // Reset buzzer
+        socket.on('resetBuzzer', () => {
+            buzzerLocked = true;
+            updateBuzzerButton();
+            updateStatus('Waiting for next question...', '#999');
+        });
+
+        function populateTeamSelect() {
+            const select = document.getElementById('teamSelect');
+            if (!gameState) return;
+
+            const activeTeams = gameState.teams.filter(t => t.active);
+
+            select.innerHTML = '<option value="">-- Select Team --</option>' +
+                activeTeams.map(team =>
+                    `<option value="${team.id}">${team.icon} ${team.name}</option>`
+                ).join('');
+
+            // Try to restore selection
+            if (selectedTeamId) {
+                select.value = selectedTeamId;
+            }
+        }
+
+        // Team selection change
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('teamSelect').addEventListener('change', (e) => {
+                selectedTeamId = parseInt(e.target.value) || null;
+                updateBuzzerStatus();
+            });
+
+            // Save player name to localStorage
+            const nameInput = document.getElementById('playerName');
+            const savedName = localStorage.getItem('playerName');
+            if (savedName) {
+                nameInput.value = savedName;
+            }
+
+            nameInput.addEventListener('input', (e) => {
+                localStorage.setItem('playerName', e.target.value);
+            });
+        });
+
+        function updateBuzzerStatus() {
+            const button = document.getElementById('buzzerButton');
+
+            if (!selectedTeamId) {
+                buzzerLocked = true;
+                updateStatus('Select your team to begin', '#999');
+            } else if (!gameState?.currentQuestion) {
+                buzzerLocked = true;
+                updateStatus('Waiting for next question...', '#999');
+            } else {
+                buzzerLocked = false;
+                updateStatus('Ready to buzz in!', '#10b981');
+            }
+
+            updateBuzzerButton();
+        }
+
+        function updateBuzzerButton() {
+            const button = document.getElementById('buzzerButton');
+
+            if (buzzerLocked || !selectedTeamId) {
+                button.classList.add('locked');
+            } else {
+                button.classList.remove('locked');
+            }
+        }
+
+        function updateStatus(message, color = '#999') {
+            const status = document.getElementById('buzzerStatus');
+            const icon = buzzerLocked ? '⏳' : '✓';
+            const iconColor = buzzerLocked ? '#999' : '#10b981';
+
+            status.innerHTML = `
+                <p><strong>Status:</strong> ${message}</p>
+                <p style="margin-top: 10px; font-size: 14px; color: ${iconColor};">
+                    ${icon} ${buzzerLocked ? 'Buzzer Locked' : 'Buzzer Active • Vibration Enabled'}
+                </p>
+            `;
+        }
+
+        function pressBuzzer() {
+            if (buzzerLocked || !selectedTeamId) {
+                return;
+            }
+
+            const playerName = document.getElementById('playerName').value || 'Anonymous';
+            const selectedTeam = gameState.teams.find(t => t.id === selectedTeamId);
+
+            if (!selectedTeam) {
+                alert('Please select a team first!');
+                return;
+            }
+
+            // Send buzzer press to server
+            socket.emit('buzzer', {
+                teamId: selectedTeam.id,
+                teamName: selectedTeam.name,
+                playerName: playerName
+            });
+
+            // Vibration feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+
+            // Play local sound
+            playSound('buzzer');
+
+            // Lock buzzer immediately
+            buzzerLocked = true;
+            updateBuzzerButton();
+            updateStatus('Buzzed in! Waiting for judge...', '#f59e0b');
+        }
+    </script>
+</body>
+</html>
